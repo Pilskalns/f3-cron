@@ -149,11 +149,12 @@ class Cron extends \Prefab {
      * @param array $params
      */
     function route($f3,$params) {
+		$async = substr($f3->get('PATH'),0,10)=='/cron/sync'?FALSE:TRUE;
         if (PHP_SAPI!='cli' && !$this->web)
             $f3->error(404);
         $exec=isset($params['job'])?
             array($params['job']=>$this->execute($params['job'],FALSE)):
-            $this->run();
+            $this->run(null, $async);
         if (!$this->silent) {
             if (PHP_SAPI!='cli')
                 header('Content-Type: text/plain');
@@ -245,7 +246,7 @@ class Cron extends \Prefab {
             foreach(array('php','php-cli') as $path) // try to guess the binary name
                 if ($this->binary($path))
                     break;
-        $f3->route(array('GET /cron','GET /cron/@job'),array($this,'route'));
+        $f3->route(array('GET /cron','GET /cron/sync','GET /cron/@job'),array($this,'route'));
     }
 
 }
