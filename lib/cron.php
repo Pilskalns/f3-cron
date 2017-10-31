@@ -114,8 +114,13 @@ class Cron extends \Prefab {
             $dir=dirname($this->script);
             $file=basename($this->script);
             if (@$dir[0]!='/')
-                $dir=getcwd().'/'.$dir;
-            exec(sprintf('cd "%s";%s %s /cron/%s > /dev/null 2>/dev/null &',$dir,$this->binary,$file,$job));
+                $dir=getcwd().DIRECTORY_SEPARATOR.$dir;
+			if (substr(php_uname(),0,7)=="Windows"){
+				$execmd = sprintf('%s %s /cron/%s',$this->binary,$file,$job);
+				proc_close(proc_open("start /b ".$execmd, [["pipe", "r"], ["pipe", "w"]], $pipes, $dir, null, ['suppress_errors'=>TRUE]));
+			} else {
+				exec(sprintf('cd "%s";%s %s /cron/%s > /dev/null 2>/dev/null &',$dir,$this->binary,$file,$job));
+			}
             return FALSE;
         }
         $start=microtime(TRUE);
